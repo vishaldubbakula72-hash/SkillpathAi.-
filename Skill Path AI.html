@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Skill Path AI — Engineering Career Mentor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<style>
+:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{font-family:'Inter',system-ui,sans-serif;background:#f8fafc;color:#0f172a}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.m{animation:fi .25s ease-out}
+</style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+<div id="loginView" class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-950">
+  <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl p-7">
+    <div class="flex items-center gap-3 mb-5">
+      <div class="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-extrabold text-xl">SP</div>
+      <div><h1 class="text-2xl font-extrabold">Skill Path AI</h1><p class="text-xs font-medium text-indigo-600">AI Career Mentor for Engineers</p></div>
+    </div>
+    <p class="text-sm text-slate-600 mb-5">Sign in to unlock your AI mentor, personal roadmap and daily progress tracking.</p>
+    <form id="loginForm" class="space-y-4">
+      <input id="loginName" required placeholder="Full name" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+      <input id="loginEmail" type="email" required placeholder="Student email" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+      <button class="w-full py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm">Start My Career Session →</button>
+    </form>
+    <p class="text-[11px] text-slate-400 text-center mt-4">Progress is saved in this browser under your email.</p>
+  </div>
+</div>
+
+<div id="appView" class="hidden flex-1 flex flex-col max-w-6xl w-full mx-auto">
+  <header class="bg-white border-b border-slate-200 px-4 py-3 flex flex-wrap items-center justify-between gap-2">
+    <div><span class="font-extrabold block leading-none">Skill Path AI</span><span id="userBadge" class="text-[11px] text-slate-500"></span></div>
+    <div class="order-3 w-full sm:order-none sm:w-auto sm:flex-1 sm:max-w-xs sm:mx-2">
+      <div class="flex justify-between text-[11px] font-semibold mb-1"><span class="text-slate-600">Career Readiness</span><span id="headerPct" class="text-indigo-600">0%</span></div>
+      <div class="h-2 bg-slate-100 rounded-full overflow-hidden"><div id="headerBar" class="h-full bg-gradient-to-r from-indigo-500 to-emerald-500 transition-all duration-500" style="width:0%"></div></div>
+    </div>
+    <div class="flex gap-2">
+      <button onclick="resetOnboarding()" class="text-xs font-medium px-3 py-1.5 rounded-lg bg-slate-100">Restart AI</button>
+      <button onclick="logout()" class="text-xs font-medium px-3 py-1.5 rounded-lg bg-rose-50 text-rose-600">Switch</button>
+    </div>
+  </header>
+
+  <nav class="bg-white border-b border-slate-200 px-2 flex overflow-x-auto">
+    <button id="tab-mentor" onclick="switchTab('mentor')" class="tb py-3 px-3 text-xs font-semibold border-b-2 whitespace-nowrap">🤖 Mentor</button>
+    <button id="tab-roadmap" onclick="switchTab('roadmap')" class="tb py-3 px-3 text-xs font-semibold border-b-2 whitespace-nowrap">🗺️ My Path</button>
+    <button id="tab-tracker" onclick="switchTab('tracker')" class="tb py-3 px-3 text-xs font-semibold border-b-2 whitespace-nowrap">📈 Daily Progress</button>
+    <button id="tab-explore" onclick="switchTab('explore')" class="tb py-3 px-3 text-xs font-semibold border-b-2 whitespace-nowrap">📚 Explore Roles</button>
+  </nav>
+
+  <main id="panel-mentor" class="flex-1 flex flex-col p-3 max-w-4xl w-full mx-auto">
+    <div id="chat" class="bg-white rounded-2xl border border-slate-200 p-4 overflow-y-auto space-y-3 min-h-[360px] max-h-[62vh]"></div>
+    <div id="quick" class="mt-3 flex flex-wrap gap-2"></div>
+    <form id="chatForm" class="mt-3 flex gap-2">
+      <input id="chatInput" placeholder="Ask about salary, skills, internships…" class="flex-1 min-w-0 px-4 py-3 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+      <button class="px-5 py-3 rounded-xl bg-indigo-600 text-white font-semibold text-sm">Send</button>
+    </form>
+  </main>
+
+  <section id="panel-roadmap" class="hidden flex-1 p-4 max-w-5xl w-full mx-auto"><div id="roadmap"></div></section>
+
+  <section id="panel-tracker" class="hidden flex-1 p-4 max-w-5xl w-full mx-auto space-y-4">
+    <div class="bg-white rounded-2xl border border-slate-200 p-5">
+      <div class="flex justify-between items-center mb-3"><h2 class="font-extrabold">Daily Readiness Progress</h2><span id="trPct" class="px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 font-extrabold text-sm">0%</span></div>
+      <div class="h-4 bg-slate-100 rounded-full overflow-hidden mb-4"><div id="trBar" class="h-full bg-gradient-to-r from-indigo-600 to-emerald-500 transition-all duration-500" style="width:0%"></div></div>
+      <form id="logForm" class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+        <input id="logTopic" required placeholder="What did you learn/build today?" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm" />
+        <select id="logHours" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm bg-white"><option value="1">1 hour</option><option value="2" selected>2 hours</option><option value="3">3 hours</option><option value="4">4+ hours</option></select>
+        <input id="logProof" placeholder="Link to work (optional)" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm" />
+        <input id="logBlock" placeholder="Any weakness or blocker today?" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm" />
+        <button class="px-5 py-2.5 rounded-xl bg-emerald-600 text-white font-semibold text-sm">Upload Progress ↑</button>
+      </form>
+      <h3 class="text-xs font-bold uppercase text-slate-500 mt-5 mb-2">History</h3>
+      <div id="history" class="space-y-2"></div>
+    </div>
+    <div class="bg-white rounded-2xl border border-slate-200 p-5">
+      <span class="inline-block px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800 text-xs font-bold mb-2">AI Weakness Coach</span>
+      <div id="coach" class="text-sm text-slate-600 space-y-2"></div>
+    </div>
+  </section>
+
+  <section id="panel-explore" class="hidden flex-1 p-4 max-w-6xl w-full mx-auto space-y-4">
+    <div class="bg-white p-4 rounded-2xl border border-slate-200 space-y-3">
+      <div id="pills" class="flex flex-wrap gap-1.5"></div>
+      <input id="search" oninput="renderExplore()" placeholder="Search roles or tools (ETABS, Python…)" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm" />
+    </div>
+    <div id="grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+  </section>
+</div>
+
+<script>
+const R=(title,domain,path,skills,projects,internships,pay)=>({title,domain,path,skills,projects,internships,pay});
+const DB={
+"Civil Engineering":{advice:"Site experience matters most in civil. Do real site internships from 2nd/3rd year and pair your degree with STAAD/ETABS, Primavera, Revit or Civil 3D. SSC JE, State PWD, ESE and GATE PSUs offer the most stability.",roles:[
+R("Structural Design Engineer","Structural","Junior Engineer > Structural Engineer > Senior > Design Lead > Principal",[["Strength of materials, structural analysis","Critical"],["RCC (IS 456) & steel (IS 800) design","Critical"],["Loads & codes (IS 875, IS 1893, IS 13920)","Critical"],["STAAD.Pro / ETABS / SAFE","Critical"],["AutoCAD + Revit Structure","High"],["Foundation design & detailing","High"],["Capstone: multi-storey building end to end","Critical"]],["G+5 building in ETABS","RCC detailing drawings","Steel truss design","Seismic case study"],["L&T","Tata Projects","Shapoorji Pallonji","Afcons","Arup","Jacobs"],"₹3.5-7 LPA trainee → ₹14-24 LPA senior → ₹40-70 LPA principal"),
+R("Bridge Engineer","Structural","Trainee > Bridge Design Engineer > Senior > Bridge Lead > Chief",[["Structural analysis, RCC & steel","Critical"],["Bridge codes (IRC 6, IRC 112, IRC 22)","Critical"],["Prestressed concrete","Critical"],["STAAD / MIDAS Civil / CSiBridge","Critical"],["Pier, abutment & pile foundations","High"],["Capstone: design a girder bridge","Critical"]],["Slab/girder bridge per IRC","Load analysis in MIDAS","Pier & foundation design"],["NHAI contractors","L&T","Afcons","Egis","AECOM","Indian Railways"],"₹4-8 LPA trainee → ₹16-28 LPA senior → ₹28-48 LPA lead"),
+R("Site / Execution Engineer","Construction","Site Trainee > Site Engineer > Senior > Project Manager > GM",[["Building materials, concrete technology","Critical"],["Reading structural & architectural drawings","Critical"],["Formwork, reinforcement, concreting","Critical"],["Surveying (Total Station, levels)","High"],["Quality, safety & IS codes","Critical"],["Estimation & billing basics","High"]],["Site execution internship","Formwork checklist","Quantity take-off"],["L&T","Tata Projects","Shapoorji","Godrej Properties","DLF","Prestige"],"₹3-6 LPA trainee → ₹12-20 LPA senior → ₹35-80 LPA GM"),
+R("Planning Engineer (Primavera)","Construction","Trainee > Planning Engineer > Senior Planner > Planning Manager",[["Construction methods + drawings","Critical"],["Quantity take-off & estimation","Critical"],["MS Project","Critical"],["Primavera P6","Critical"],["Critical path, delay analysis, EVM","High"],["Capstone: baseline schedule","Critical"]],["Baseline schedule in P6","S-curve tracking","Delay analysis case"],["L&T","Tata Projects","Shapoorji","Adani Infra"],"₹3.5-7 LPA trainee → ₹14-24 LPA senior → ₹24-42 LPA manager"),
+R("Quantity Surveyor / Billing Engineer","Construction","Trainee > Billing Engineer > Senior QS > Contracts Manager",[["Materials & construction methods","Critical"],["Quantity take-off from drawings","Critical"],["Rate analysis & BOQ (CPWD/SOR)","Critical"],["Advanced Excel + estimation software","High"],["FIDIC contracts & tendering","High"],["Capstone: full estimate & bill","Critical"]],["BOQ for a residential building","Rate analysis sheet","Running-bill preparation"],["L&T","Turner & Townsend","RLB","Arcadis","DLF"],"₹3-6 LPA trainee → ₹12-20 LPA senior → ₹35-65 LPA head"),
+R("Highway / Transportation Engineer","Transportation","Trainee > Highway Design Engineer > Senior > Team Leader",[["Surveying & soil mechanics","Critical"],["Geometric & pavement design","Critical"],["IRC codes & MoRTH specs","Critical"],["Civil 3D / MX Road","Critical"],["Traffic engineering & drainage","High"],["Capstone: design a highway stretch","Critical"]],["Alignment in Civil 3D","Pavement design (IRC 37)","Traffic survey"],["NHAI","L&T","Dilip Buildcon","Egis","AECOM","State PWD"],"₹3.5-7 LPA trainee → ₹14-24 LPA senior → ₹40-70 LPA chief")]},
+"Computer Science":{advice:"Build projects and put them on GitHub from year one. Practice DSA regularly and aim for internships by 3rd year.",roles:[
+R("Software Developer","Software","Intern > SDE-1 > SDE-2 > Senior > Staff Engineer",[["DSA & problem solving","Critical"],["One language deeply (Java/Python/C++)","Critical"],["Git & GitHub","High"],["Databases & SQL","Critical"],["System design basics","High"],["Capstone: deployed full-stack app","Critical"]],["Full-stack web app","REST API with auth","Open-source contribution"],["Google","Microsoft","Amazon","Startups"],"₹6-20 LPA entry → ₹25-50 LPA senior"),
+R("Data Analyst / ML Engineer","Data & AI","Analyst > Data Scientist > Senior > ML Lead",[["Python, NumPy, Pandas","Critical"],["Statistics & probability","Critical"],["SQL & visualization","High"],["Machine learning (scikit-learn)","Critical"],["Capstone: end-to-end ML project","Critical"]],["Sales dashboard","House price model","Kaggle competition"],["Fractal","Mu Sigma","Flipkart","Startups"],"₹5-12 LPA entry → ₹20-45 LPA senior")]},
+"Mechanical Engineering":{advice:"Learn CAD/CAE tools early and get hands-on with a design team, workshop or plant internship.",roles:[
+R("Design Engineer (CAD/CAE)","Design","Trainee > Design Engineer > Senior > Design Lead",[["Engineering drawing & GD&T","Critical"],["SolidWorks / CATIA / Creo","Critical"],["Machine design","Critical"],["ANSYS (FEA)","High"],["Capstone: full product design","Critical"]],["Gearbox design","FEA of a bracket","3D-printed prototype"],["Tata Motors","Mahindra","L&T","Bosch"],"₹3.5-7 LPA trainee → ₹15-28 LPA senior"),
+R("Production / Quality Engineer","Manufacturing","Trainee > Production Engineer > Manager > Plant Head",[["Manufacturing processes","Critical"],["Lean, 5S, Six Sigma","High"],["Quality tools (SPC, FMEA)","Critical"],["Plant internship","Critical"]],["Process improvement study","FMEA on an assembly"],["Maruti","Hero","TVS","Tata Steel"],"₹3-6 LPA trainee → ₹12-25 LPA manager")]},
+"Electrical Engineering":{advice:"Mix power-systems fundamentals with PLC/SCADA and software tools. PSU exams through GATE are a strong route.",roles:[
+R("Power Systems Engineer","Power","Trainee > Engineer > Senior > Manager",[["Circuit theory & machines","Critical"],["Power system analysis","Critical"],["ETAP / MATLAB","High"],["Protection & switchgear","Critical"]],["Load flow study in ETAP","Relay coordination"],["NTPC","PGCIL","Siemens","ABB"],"₹4-8 LPA trainee → ₹18-35 LPA senior")]},
+"Electronics Engineering":{advice:"Hardware plus embedded skills are rare and valued. Build real circuits and firmware projects.",roles:[
+R("Embedded Systems Engineer","Embedded","Trainee > Engineer > Senior > Architect",[["C/C++ for microcontrollers","Critical"],["ARM / STM32 / ESP32","Critical"],["RTOS & communication protocols","High"],["PCB design","High"]],["Sensor data logger","RTOS-based device"],["Bosch","Texas Instruments","Qualcomm","Continental"],"₹4-10 LPA trainee → ₹20-40 LPA senior"),
+R("VLSI Design Engineer","VLSI","Trainee > Design Engineer > Senior > Lead",[["Digital design & Verilog","Critical"],["CMOS & analog basics","Critical"],["Verification (SystemVerilog/UVM)","High"],["EDA tools","High"]],["RTL of a UART","ALU verification"],["Intel","Qualcomm","Synopsys","Cadence"],"₹6-14 LPA trainee → ₹25-50 LPA senior")]}
+};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let S=null,pillSel='All';
+const K=e=>'sp_'+e.toLowerCase();
+function load(e){try{return JSON.parse(localStorage.getItem(K(e)))}catch(x){return null}}
+function save(){try{localStorage.setItem(K(S.email),JSON.stringify(S));localStorage.setItem('sp_last',S.email)}catch(x){}}
+const allRoles=()=>Object.entries(DB).flatMap(([b,d])=>d.roles.map(r=>({...r,branch:b})));
+const cur=()=>allRoles().find(r=>r.title===S.role);
+function pct(){const r=cur();if(!r)return 0;const d=r.skills.filter((_,i)=>S.done[i]).length;const h=S.logs.reduce((a,l)=>a+ +l.hours,0);return Math.round(70*d/r.skills.length+30*Math.min(h/40,1))}
+
+$('loginForm').onsubmit=e=>{e.preventDefault();const em=$('loginEmail').value.trim();S=load(em)||{email:em,done:{},logs:[],branch:null,role:null};S.name=$('loginName').value.trim();S.email=em;save();showApp()};
+function logout(){try{localStorage.removeItem('sp_last')}catch(x){}location.reload()}
+function showApp(){$('loginView').classList.add('hidden');$('appView').classList.remove('hidden');$('userBadge').textContent=S.name+' · '+S.email;$('chat').innerHTML='';switchTab('mentor');S.role?greetBack():askBranch()}
+
+function add(who,t){const d=document.createElement('div');d.className='m flex '+(who=='me'?'justify-end':'');const b=document.createElement('div');b.className='max-w-[85%] px-4 py-2.5 rounded-2xl text-sm whitespace-pre-line '+(who=='me'?'bg-indigo-600 text-white':'bg-slate-100 text-slate-800');b.textContent=t;d.appendChild(b);$('chat').appendChild(d);$('chat').scrollTop=1e9}
+function quick(opts,fn){$('quick').innerHTML='';opts.forEach(o=>{const b=document.createElement('button');b.className='px-3.5 py-2 rounded-full border border-indigo-200 bg-white text-indigo-700 text-xs font-semibold';b.textContent=o;b.onclick=()=>{$('quick').innerHTML='';add('me',o);fn(o)};$('quick').appendChild(b)})}
+function askBranch(){add('bot','Hi '+S.name.split(' ')[0]+'! I\'m your AI career mentor. Which branch are you studying?');quick(Object.keys(DB),b=>{S.branch=b;save();add('bot',DB[b].advice+'\n\nWhich role interests you most?');quick(DB[b].roles.map(r=>r.title),pick)})}
+function pick(t){S.role=t;S.done={};save();const r=cur();add('bot','Great choice! '+r.title+'\n\nCareer path: '+r.path+'\n\nPay: '+r.pay+'\n\nI\'ve built your roadmap with '+r.skills.length+' skills. Tick them off in "My Path" and log daily work in "Daily Progress".');qr();renderAll()}
+function greetBack(){add('bot','Welcome back, '+S.name.split(' ')[0]+'! You\'re on the '+S.role+' path at '+pct()+'% readiness. What would you like to know?');qr()}
+function qr(){quick(['My first steps','Salary','Internships','Projects to build','Open my roadmap'],ans)}
+function ans(q){const r=cur();if(!r){add('bot','Pick a branch and role first — tap "Restart AI".');return}const l=q.toLowerCase();let a;
+if(/road|open/.test(l)){switchTab('roadmap');return}
+if(/salar|pay|package|lpa/.test(l))a='Expected pay for '+r.title+':\n'+r.pay;
+else if(/intern|compan|hire/.test(l))a='Good internship targets:\n• '+r.internships.join('\n• ');
+else if(/project/.test(l))a='Projects to build:\n• '+r.projects.join('\n• ');
+else if(/path|career|grow/.test(l))a='Career ladder:\n'+r.path;
+else if(/weak|improv|first|start|step|learn|skill/.test(l)){const w=r.skills.filter((_,i)=>!S.done[i]).slice(0,3);a=w.length?'Start with these:\n• '+w.map(s=>s[0]+' ('+s[1]+')').join('\n• ')+'\n\nSpend 1-2 focused hours daily and log it in Daily Progress.':'You\'ve completed every skill — now polish projects and apply for internships!'}
+else a='I can help with: first steps, salary, internships, projects, or your career path. Try one of those!';
+add('bot',a);qr()}
+$('chatForm').onsubmit=e=>{e.preventDefault();const v=$('chatInput').value.trim();if(!v)return;$('chatInput').value='';add('me',v);ans(v)};
+function resetOnboarding(){S.branch=null;S.role=null;S.done={};save();$('chat').innerHTML='';askBranch();renderAll();switchTab('mentor')}
+
+function switchTab(t){['mentor','roadmap','tracker','explore'].forEach(n=>{$('panel-'+n).classList.toggle('hidden',n!=t);if(n=='mentor')$('panel-mentor').classList.toggle('flex',n==t);const b=$('tab-'+n);b.classList.toggle('border-indigo-600',n==t);b.classList.toggle('text-indigo-600',n==t);b.classList.toggle('border-transparent',n!=t);b.classList.toggle('text-slate-500',n!=t)});renderAll()}
+function renderAll(){const p=pct();$('headerPct').textContent=p+'%';$('headerBar').style.width=p+'%';$('trPct').textContent=p+'%';$('trBar').style.width=p+'%';renderRoadmap();renderTracker();renderExplore()}
+
+function renderRoadmap(){const r=cur();if(!r){$('roadmap').innerHTML='<div class="bg-white rounded-2xl border border-slate-200 p-6 text-sm text-slate-600">No path chosen yet. Talk to the AI Mentor or pick a role in Explore.</div>';return}
+$('roadmap').innerHTML='<div class="bg-white rounded-2xl border border-slate-200 p-5 space-y-5"><div><span class="text-xs font-bold text-indigo-600">'+esc(r.branch)+' · '+esc(r.domain)+'</span><h2 class="text-xl font-extrabold">'+esc(r.title)+'</h2><p class="text-sm text-slate-500 mt-1">'+esc(r.path)+'</p><p class="text-sm font-semibold text-emerald-700 mt-1">'+esc(r.pay)+'</p></div><div><h3 class="text-xs font-bold uppercase text-slate-500 mb-2">Skill Roadmap (tick when done)</h3><div class="space-y-2">'+r.skills.map((s,i)=>'<label class="flex items-start gap-3 p-3 rounded-xl border '+(S.done[i]?'bg-emerald-50 border-emerald-200':'border-slate-200')+'"><input type="checkbox" class="mt-0.5 w-4 h-4" '+(S.done[i]?'checked':'')+' onchange="tog('+i+')"><span class="flex-1 text-sm">M'+(i+1)+' · '+esc(s[0])+'</span><span class="text-[10px] font-bold px-2 py-0.5 rounded-full '+(s[1]=='Critical'?'bg-rose-100 text-rose-700':'bg-amber-100 text-amber-700')+'">'+s[1]+'</span></label>').join('')+'</div></div><div class="grid sm:grid-cols-2 gap-4 text-sm"><div><h3 class="text-xs font-bold uppercase text-slate-500 mb-1">Projects</h3><ul class="list-disc pl-5 text-slate-600">'+r.projects.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div><div><h3 class="text-xs font-bold uppercase text-slate-500 mb-1">Internships</h3><ul class="list-disc pl-5 text-slate-600">'+r.internships.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div></div></div>'}
+function tog(i){S.done[i]=!S.done[i];save();renderAll()}
+
+function renderTracker(){const r=cur();$('history').innerHTML=S.logs.length?S.logs.slice().reverse().map(l=>'<div class="p-3 rounded-xl border border-slate-200 text-sm"><div class="flex justify-between"><b>'+esc(l.topic)+'</b><span class="text-xs text-slate-400">'+esc(l.date)+' · '+l.hours+'h</span></div>'+(l.proof?'<div class="text-xs text-indigo-600 break-all">'+esc(l.proof)+'</div>':'')+(l.block?'<div class="text-xs text-amber-700">Blocker: '+esc(l.block)+'</div>':'')+'</div>').join(''):'<p class="text-sm text-slate-400">No logs yet. Upload your first day above.</p>';
+let h='';if(!r)h='<p>Choose a role first and I\'ll build your plan.</p>';else{const w=r.skills.map((s,i)=>({s,i})).filter(x=>!S.done[x.i]).sort((a,b)=>(b.s[1]=='Critical')-(a.s[1]=='Critical')).slice(0,3);h=w.length?'<p class="font-semibold text-slate-800">Focus on these next:</p>'+w.map(x=>'<p>• '+esc(x.s[0])+' <span class="text-xs text-slate-400">('+x.s[1]+')</span></p>').join(''):'<p>All skills ticked — great work!</p>';const b=S.logs.filter(l=>l.block).slice(-2);if(b.length)h+='<p class="font-semibold text-slate-800 pt-2">Recent blockers:</p>'+b.map(l=>'<p>• '+esc(l.block)+' — break it into a small task and spend 30 minutes on it tomorrow.</p>').join('')}
+$('coach').innerHTML=h}
+$('logForm').onsubmit=e=>{e.preventDefault();S.logs.push({topic:$('logTopic').value,hours:$('logHours').value,proof:$('logProof').value,block:$('logBlock').value,date:new Date().toLocaleDateString()});save();e.target.reset();renderAll()};
+
+function renderExplore(){const bs=['All',...Object.keys(DB)];$('pills').innerHTML=bs.map(b=>'<button onclick="pillSel=\''+b+'\';renderExplore()" class="px-3 py-1.5 rounded-full text-xs font-semibold '+(pillSel==b?'bg-indigo-600 text-white':'bg-slate-100 text-slate-700')+'">'+b+'</button>').join('');
+const q=$('search').value.toLowerCase();const list=allRoles().filter(r=>(pillSel=='All'||r.branch==pillSel)&&JSON.stringify(r).toLowerCase().includes(q));
+$('grid').innerHTML=list.length?list.map(r=>'<div class="bg-white rounded-2xl border border-slate-200 p-4 flex flex-col"><span class="text-[11px] font-bold text-indigo-600">'+esc(r.branch)+' · '+esc(r.domain)+'</span><h3 class="font-extrabold mt-1">'+esc(r.title)+'</h3><p class="text-xs text-slate-500 mt-1 flex-1">'+esc(r.path)+'</p><p class="text-xs font-semibold text-emerald-700 mt-2">'+esc(r.pay)+'</p><button onclick="choose(\''+r.title.replace(/'/g,"\\'")+'\')" class="mt-3 py-2 rounded-xl bg-indigo-50 text-indigo-700 text-xs font-bold">Choose this path →</button></div>').join(''):'<p class="text-sm text-slate-500">No roles match.</p>'}
+function choose(t){const r=allRoles().find(x=>x.title==t);S.branch=r.branch;S.role=t;S.done={};save();switchTab('roadmap')}
+
+try{const l=localStorage.getItem('sp_last');if(l){const u=load(l);if(u){S=u;showApp()}}}catch(x){}
+</script>
+</body>
+</html>
